@@ -3,7 +3,7 @@
 """
 Created on Wed Nov 16 13:00:19 2022
 
-@author: mattias
+@author: Mattias Holmström, Jakob Nyström
 """
 
 """Implementation of the Lewenberg Marquardt algorithm, optimization method for nonlinear least squares"""
