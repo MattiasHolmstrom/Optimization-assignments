@@ -24,7 +24,16 @@ class LevenbergMarquardt:
     Levenberg-Marquart (LM) algorithm.
     """
 
-    def __init__(self, func, grad=None, tol=1e-3, lambda_=1, alpha=1, max_iter=1000):
+    def __init__(
+            self,
+            func,
+            grad=None,
+            tol=1e-3,
+            lambda_=1,
+            alpha=1,
+            max_iter=1000,
+            plot_conv=False,
+    ):
         """
         Initializes the LevenbergMarquardt optimization class object.
 
@@ -36,6 +45,8 @@ class LevenbergMarquardt:
                 Gauss-Newton formula
             alpha: step size when updating x_k to x_k + 1
             max_iter: max number of iterations allowed before the algorithm terminates
+            plot_conv: set to True if MSE and parameter values per iteration should
+                be plotted
         """
 
         # Store input parameters as class attributes
@@ -45,6 +56,7 @@ class LevenbergMarquardt:
         self.lambda_ = lambda_
         self.alpha = alpha
         self.max_iter = max_iter
+        self.plot_conv = plot_conv
 
         # Variables for storing results in optimization
         self.x_k = None
@@ -129,10 +141,11 @@ class LevenbergMarquardt:
                 self.success = True
                 break
 
-            # Calculate the final gradient vector at termination
+            # Calculate the final gradient vector at termination, for output
             self.final_gradient = grad_Fx.T @ Fx
 
     def print_output_report(self):
+        """Prints results of the optimization in digestable format"""
 
         # Print results
         print("------ Output report ------\n")
@@ -140,7 +153,36 @@ class LevenbergMarquardt:
         print(f"Parameter values: {self.x_k}")
         print(f"Function value: {self.function_values[:10]}")
         print(f"Number of iterations: {self.n_iterations}")
-        print(f"Gradient vector: {self.final_gradient}")
+        print(f"Final gradient vector: {self.final_gradient}")
+
+    def plot_solution(self, t, y):
+        """
+        Plot the solution given by the optimized parameters and the original
+        datapoints.
+        """
+
+        # Create plot
+        plt.figure(figsize=(6, 4))
+        plt.title("Mean squared error for ")
+
+        # Calculate least squares solution (line)
+        line_range = np.arange(min(t), max(t), 0.1)
+        line_values = [self.x_k[0] * np.exp(self.x_k[1] * line_range[i]) for i in range(len(line_range))]
+
+        # Plot solution and original datapoints
+        plt.scatter(t, y)
+        plt.plot(line_range, line_values)
+        plt.show()
 
     def plot_convergence(self):
-        pass
+        """
+        Plot function value and parameter values for each iteration, to analyze
+        convergence behavior of the algorithm.
+        """
+        # Create plot
+        plt.figure(figsize=(6, 4))
+        plt.title("Mean squared error for each iteration")
+
+        # Plot MSE values
+        plt.plot(range(len(self.function_values)), self.function_values)
+        plt.show()
