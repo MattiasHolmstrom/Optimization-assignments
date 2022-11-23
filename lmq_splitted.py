@@ -8,13 +8,7 @@ Created on Tue Nov 22 14:59:23 2022
 
 
 import numpy as np
-import scipy
-from scipy.misc import derivative
-import pandas as pd
-import math
-from sympy import symbols, diff
 import matplotlib.pyplot as plt
-from sympy import integrate, Symbol
 
 
 class LevenbergMarquardt:
@@ -62,10 +56,10 @@ class LevenbergMarquardt:
         self.plot_conv = plot_conv
 
         # Variables for storing results in optimization
-        self.x_k = None
         self.function_values = []
         self.param_values = []
         self.final_gradient = None
+        self.final_x_k = None
 
         # Attribute for tracking succesful convergence
         self.success = False
@@ -116,7 +110,7 @@ class LevenbergMarquardt:
         """
 
         # Initial values for parameters
-        self.x_k = np.array(x0)
+        x_k = np.array(x0)
 
         # Dampening factor
         damp = self.lambda_ * np.eye(2)
@@ -129,15 +123,15 @@ class LevenbergMarquardt:
             self.n_iterations += 1
 
             # Save parameter values for this iteration
-            self.param_values.append(self.x_k)
+            self.param_values.append(x_k)
 
             # Compute F(x) vectors and gradient matrix of F(x)
-            Fx, function_value = self.calculate_function_val(t, y_t, self.x_k)
-            grad_Fx = self.calculate_gradient(t, self.x_k)
+            Fx, function_value = self.calculate_function_val(t, y_t, x_k)
+            grad_Fx = self.calculate_gradient(t, x_k)
             self.function_values.append(function_value)
 
             # Compute next point x_k+1
-            self.x_k = self.x_k - self.alpha * ((grad_Fx.T @ Fx).T @
+            x_k = x_k - self.alpha * ((grad_Fx.T @ Fx).T @
                                                 (np.linalg.inv(grad_Fx.T @ grad_Fx + damp)))
 
             if np.sum(np.abs(grad_Fx.T @ Fx)) <= self.tol:
@@ -146,6 +140,7 @@ class LevenbergMarquardt:
 
             # Calculate the final gradient vector at termination, for output
             self.final_gradient = grad_Fx.T @ Fx
+            self.final_x_k = x_k
 
     def print_output_report(self):
         """Prints results of the optimization in digestable format"""
@@ -153,7 +148,7 @@ class LevenbergMarquardt:
         # Print results
         print("------ Output report ------\n")
         print(f"Successful convergence: {self.success}")
-        print(f"Parameter values: {self.x_k}")
+        print(f"Parameter values: {self.final_x_k}")
         print(f"Function value: {self.function_values[-1]}")
         print(f"Number of iterations: {self.n_iterations}")
         print(f"Final gradient vector: {self.final_gradient}")
@@ -163,10 +158,10 @@ class LevenbergMarquardt:
         self.print_output_report()
 
         # Generate plots if set to True
+        if self.plot_sol:
+            self.plot_solution(t, y_t)
         if self.plot_conv:
             self.plot_convergence()
-        # if self.plot_solution:
-        # self.plot_solution(t, y)
 
     def plot_solution(self, t, y):
         """
@@ -176,15 +171,17 @@ class LevenbergMarquardt:
 
         # Create plot
         plt.figure(figsize=(6, 4))
-        plt.title("Mean squared error for ")
+        plt.title("Least squares solution", fontsize=14, pad=16)
+        plt.xlabel("x", fontsize=12)
+        plt.ylabel("f(x)", fontsize=12)
 
         # Calculate least squares solution (line)
         line_range = np.arange(min(t), max(t), 0.1)
-        line_values = [self.x_k[0] * np.exp(self.x_k[1] * line_range[i]) for i in range(len(line_range))]
+        line_values = [self.final_x_k[0] * np.exp(self.final_x_k[1] * line_range[i]) for i in range(len(line_range))]
 
         # Plot solution and original datapoints
-        plt.scatter(t, y)
-        plt.plot(line_range, line_values)
+        plt.scatter(t, y, color="red")
+        plt.plot(line_range, line_values, color="blue")
         plt.show()
 
     def plot_convergence(self):
@@ -195,9 +192,14 @@ class LevenbergMarquardt:
         # TODO: Add plot for x_k
 
         # Create plot
-        plt.figure(figsize=(6, 4))
-        plt.title("Mean squared error for each iteration")
+        fig, axes = plt.subplots(1, 2, figsize=(10, 6))
+        plt.suptitle("Convergence behavior", fontsize=14)
 
-        # Plot MSE values
-        plt.plot(range(len(self.function_values)), self.function_values)
+        # Plot MSE and parameter values
+        axes[0].plot(range(len(self.function_values)), self.function_values, color="blue")
+        axes[0].set_title("Mean squared error (function value)", fontsize=12)
+        axes[0].set_xlabel("iteration", fontsize=12)
+        axes[0].set_ylabel("Mean squared error (MSE)", fontsize=12)
+
+        # axes[0, 1].plot
         plt.show()
