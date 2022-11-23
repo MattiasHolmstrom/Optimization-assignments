@@ -99,7 +99,7 @@ class LevenbergMarquardt:
         grad_Fx = np.array([grad_F(i, x_k) for i in range(len(t))])
         return grad_Fx
 
-    def minimize_least_squares(self, t, y_t, x0):
+    def run_lm_algorithm(self, t, y_t, x0):
         """
         Finds the least-squares solution for a nonlinear function using the
         Levenberg-Marquart (LM) algorithm.
@@ -158,12 +158,15 @@ class LevenbergMarquardt:
         print(f"Number of iterations: {self.n_iterations}")
         print(f"Final gradient vector: {self.final_gradient}")
 
+    def minimize(self, t, y_t, x_k):
+        self.run_lm_algorithm(t, y_t, x_k)
+        self.print_output_report()
+
         # Generate plots if set to True
         if self.plot_conv:
             self.plot_convergence()
-        #if self.plot_solution:
-            #self.plot_solution(t, y)
-
+        # if self.plot_solution:
+        # self.plot_solution(t, y)
 
     def plot_solution(self, t, y):
         """
