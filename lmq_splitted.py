@@ -22,18 +22,21 @@ class LevenbergMarquardt:
     """
     Finds the least-squares solution for a nonlinear function using the
     Levenberg-Marquart (LM) algorithm.
-
-    Args:
-        func:
-        grad:
-        tol: how close to zero that the gradient vector has to be for convergence
-        lambda_: dampening factor used in the LM to replace the omitted term in the
-            Gauss-Newton formula
-        alpha: step size when updating x_k to x_k + 1
-        max_iter: maximum number of iterations allowed before the algorithm terminates
     """
 
     def __init__(self, func, grad=None, tol=1e-3, lambda_=1, alpha=1, max_iter=1000):
+        """
+        Initializes the LevenbergMarquardt optimization class object.
+
+        Args:
+            func: the function to which we are fitting the least squares solution
+            grad: gradient of the function, if provided by the user
+            tol: how close to zero that the gradient vector has to be for convergence
+            lambda_: dampening factor used in the LM to replace the omitted term in the
+                Gauss-Newton formula
+            alpha: step size when updating x_k to x_k + 1
+            max_iter: max number of iterations allowed before the algorithm terminates
+        """
 
         # Store input parameters as class attributes
         self.func = func
@@ -57,16 +60,7 @@ class LevenbergMarquardt:
     def calculate_function_val(t, y_t, x_k):
         """
         Calculate the sum of least squares errors for the function supplied to the
-        optimization algorithm, for a given set of parameter values.
-
-        Args:
-            t:
-            y_t:
-            x_k:
-
-        Returns:
-            Fx:
-            function_value:
+        optimization algorithm, for a given set of parameter values (at one point).
         """
 
         F = lambda i, x_k: y_t[i] - x_k[0] * np.exp(x_k[1] * t[i])
@@ -76,6 +70,10 @@ class LevenbergMarquardt:
 
     @staticmethod
     def calculate_gradient(t, x_k):
+        """
+        Calculate the gradient of the supplied function using finite differencing,
+        unless the gradient is provided by the user.
+        """
 
         grad_F = lambda i, x_k: np.array(
             [
@@ -100,7 +98,6 @@ class LevenbergMarquardt:
             x_k: optimal parameter values
             function_values: value of the function for each iteration
             parameter_values value of parameters for each iteration
-
         """
 
         # Initial values for parameters
@@ -132,6 +129,9 @@ class LevenbergMarquardt:
                 self.success = True
                 break
 
+            # Calculate the final gradient vector at termination
+            self.final_gradient = grad_Fx.T @ Fx
+
     def print_output_report(self):
 
         # Print results
@@ -140,4 +140,7 @@ class LevenbergMarquardt:
         print(f"Parameter values: {self.x_k}")
         print(f"Function value: {self.function_values[:10]}")
         print(f"Number of iterations: {self.n_iterations}")
-        print(f"Gradient vector: {grad_Fx.T @ Fx}")
+        print(f"Gradient vector: {self.final_gradient}")
+
+    def plot_convergence(self):
+        pass
