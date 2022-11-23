@@ -26,12 +26,13 @@ class LevenbergMarquardt:
 
     def __init__(
             self,
-            func,
+            func=None,
             grad=None,
             tol=1e-3,
             lambda_=1,
             alpha=1,
             max_iter=1000,
+            plot_sol=False,
             plot_conv=False,
     ):
         """
@@ -45,6 +46,7 @@ class LevenbergMarquardt:
                 Gauss-Newton formula
             alpha: step size when updating x_k to x_k + 1
             max_iter: max number of iterations allowed before the algorithm terminates
+            plot_sol:
             plot_conv: set to True if MSE and parameter values per iteration should
                 be plotted
         """
@@ -56,6 +58,7 @@ class LevenbergMarquardt:
         self.lambda_ = lambda_
         self.alpha = alpha
         self.max_iter = max_iter
+        self.plot_sol = plot_sol
         self.plot_conv = plot_conv
 
         # Variables for storing results in optimization
@@ -151,9 +154,16 @@ class LevenbergMarquardt:
         print("------ Output report ------\n")
         print(f"Successful convergence: {self.success}")
         print(f"Parameter values: {self.x_k}")
-        print(f"Function value: {self.function_values[:10]}")
+        print(f"Function value: {self.function_values[-1]}")
         print(f"Number of iterations: {self.n_iterations}")
         print(f"Final gradient vector: {self.final_gradient}")
+
+        # Generate plots if set to True
+        if self.plot_conv:
+            self.plot_convergence()
+        #if self.plot_solution:
+            #self.plot_solution(t, y)
+
 
     def plot_solution(self, t, y):
         """
@@ -179,6 +189,8 @@ class LevenbergMarquardt:
         Plot function value and parameter values for each iteration, to analyze
         convergence behavior of the algorithm.
         """
+        # TODO: Add plot for x_k
+
         # Create plot
         plt.figure(figsize=(6, 4))
         plt.title("Mean squared error for each iteration")
