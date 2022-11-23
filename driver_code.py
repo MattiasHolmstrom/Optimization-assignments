@@ -20,7 +20,7 @@ def main():
     y = np.array([7.2, 3.0, 1.5, 0.85, 0.48, 0.25, 0.20, 0.15])
     x0 = [1, 1]
 
-    optimizer.minimize_least_squares(t, y, x0)
+    optimizer.minimize(t, y, x0)
 
 
 if __name__ == "__driver_code__":
