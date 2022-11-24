@@ -92,6 +92,15 @@ class LevenbergMarquardt:
         )
         grad_Fx = np.array([grad_F(i, x_k) for i in range(len(t))])
         return grad_Fx
+    
+    def calculate_grad_numeric(f):
+        """
+        Calculates the gradient numerically given a numpy array of function values
+        """
+        
+        numeric_grad = np.gradient(f)
+        
+        return numeric_grad
 
     def run_lm_algorithm(self, t, y_t, x0):
         """
@@ -114,6 +123,8 @@ class LevenbergMarquardt:
 
         # Dampening factor
         damp = self.lambda_ * np.eye(2)
+        
+
 
         # Initialize flag and count variables
         self.n_iterations = 0
@@ -129,6 +140,8 @@ class LevenbergMarquardt:
             Fx, function_value = self.calculate_function_val(t, y_t, x_k)
             grad_Fx = self.calculate_gradient(t, x_k)
             self.function_values.append(function_value)
+            
+            numeric_grad = self.calculate_grad_numeric(Fx)
 
             # Compute next point x_k+1
             x_k = x_k - self.alpha * ((grad_Fx.T @ Fx).T @
