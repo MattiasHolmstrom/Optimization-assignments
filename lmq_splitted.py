@@ -72,8 +72,7 @@ class LevenbergMarquardt:
         optimization algorithm, for a given set of parameter values (at one point).
         """
 
-        F = lambda i, x_k: y_t[i] - x_k[0] * np.exp(x_k[1] * t[i])
-        Fx = np.array([F(i, x_k) for i in range(len(t))])
+        Fx = y_t - x_k[0] * np.exp(x_k[1] * t)
         function_value = Fx @ Fx.T
         return Fx, function_value
 
@@ -84,13 +83,7 @@ class LevenbergMarquardt:
         unless the gradient is provided by the user.
         """
 
-        grad_F = lambda i, x_k: np.array(
-            [
-                -np.exp(x_k[1] * t[i]),
-                -t[i] * x_k[0] * np.exp(x_k[1] * t[i])
-            ]
-        )
-        grad_Fx = np.array([grad_F(i, x_k) for i in range(len(t))]).T
+        grad_Fx = np.array([-np.exp(x_k[1] * t), -t * x_k[0] * np.exp(x_k[1] * t)])
         return grad_Fx
     
     def calculate_grad_numeric(f):
