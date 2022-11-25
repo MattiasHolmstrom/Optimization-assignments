@@ -90,7 +90,7 @@ class LevenbergMarquardt:
                 -t[i] * x_k[0] * np.exp(x_k[1] * t[i])
             ]
         )
-        grad_Fx = np.array([grad_F(i, x_k) for i in range(len(t))])
+        grad_Fx = np.array([grad_F(i, x_k) for i in range(len(t))]).T
         return grad_Fx
 
     def run_lm_algorithm(self, t, y_t, x0):
@@ -131,8 +131,8 @@ class LevenbergMarquardt:
             self.function_values.append(function_value)
 
             # Compute next point x_k+1
-            x_k = x_k - self.alpha * ((grad_Fx.T @ Fx).T @
-                                                (np.linalg.inv(grad_Fx.T @ grad_Fx + damp)))
+            x_k = x_k - self.alpha * (np.linalg.inv(grad_Fx @ grad_Fx.T + damp)) @ \
+                  (grad_Fx @ Fx)
 
             if np.sum(np.abs(grad_Fx.T @ Fx)) <= self.tol:
                 self.success = True
