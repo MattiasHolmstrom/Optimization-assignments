@@ -17,13 +17,18 @@ def main():
 
     # Define test function
     def test_function_1(x_k, x, y):
-        Fx = y - x_k[0] * np.exp(x_k[1] * x)
-        return Fx
+        fx = y - x_k[0] * np.exp(x_k[1] * x)
+        return fx
+
+    # Define gradient function
+    def test_gradient_1(x, x_k):
+        grad_fx = np.array([-np.exp(x_k[1] * x), -x * x_k[0] * np.exp(x_k[1] * x)])
+        return grad_fx
 
     # Initialize optimizer without gradient argument
     optimizer_1 = LevenbergMarquardt(
         func=test_function_1,
-        grad=None,
+        grad=test_gradient_1,
         tol=1e-3,
         lambda_=1,
         alpha=1,
@@ -35,15 +40,10 @@ def main():
     # Run optimizer
     optimizer_1.minimize(t, y_t, x0)
 
-    # Define gradient function
-    def test_gradient_1(x, x_k):
-        grad_Fx = np.array([-np.exp(x_k[1] * x), -x * x_k[0] * np.exp(x_k[1] * x)])
-        return grad_Fx
-
     # Initialize optimizer without gradient argument
     optimizer_2 = LevenbergMarquardt(
         func=test_function_1,
-        grad=test_gradient_1,
+        grad=None,
         tol=1e-3,
         lambda_=1,
         alpha=1,

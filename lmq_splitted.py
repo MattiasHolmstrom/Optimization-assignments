@@ -74,21 +74,24 @@ class LevenbergMarquardt:
         """
 
         # Call supplied function to calculate f(x) for each data point
-        Fx = self.func(x_k)
+        fx = self.func(x_k)
 
         # Calculate MSE: (1 / n) * (y - y_hat)^2
-        mse = (Fx @ Fx.T) / len(Fx)
+        mse = (fx @ fx.T) / len(fx)
 
-        return Fx, mse
+        return fx, mse
 
-    @staticmethod
-    def calculate_grad_numeric(f):
+    def calculate_gradient(self, fx, x_k):
         """
         Calculates the gradient numerically given a numpy array of function values.
         """
 
-        numeric_grad = np.gradient(f)
-        return numeric_grad
+        if self.gradient:  # Call function supplied by user if it exists
+            grad_fx = self.gradient(x_k)
+        else:  # Otherwise, use numerical gradient approximation
+            grad_fx = np.gradient(fx)
+
+        return grad_fx
 
     # TODO: Remove once generic version has been implemented
     @staticmethod
@@ -104,7 +107,7 @@ class LevenbergMarquardt:
 
     # TODO: Remove once generic version has been implemented
     @staticmethod
-    def calculate_gradient(t, x_k):
+    def calculate_grad(t, x_k):
         """
         Calculate the gradient of the supplied function using finite differencing,
         unless the gradient is provided by the user.
@@ -146,22 +149,20 @@ class LevenbergMarquardt:
             self.param_values.append(x_k)
 
             # Compute F(x) vectors and gradient matrix of F(x)
-            Fx, function_value = self.calculate_function_val(t, y_t, x_k)
-            grad_Fx = self.calculate_gradient(t, x_k)
-            self.function_values.append(function_value)
-            
-            numeric_grad = self.calculate_grad_numeric(Fx)
+            fx, mse = self.calculate_function(x_k)
+            self.function_values.append(mse)
+            grad_fx = self.calculate_gradient(fx)
 
             # Compute next point x_k+1
-            x_k = x_k - self.alpha * (np.linalg.inv(grad_Fx @ grad_Fx.T + damp)) @ \
-                  (grad_Fx @ Fx)
+            x_k = x_k - self.alpha * (np.linalg.inv(grad_fx @ grad_fx.T + damp)) @ \
+                  (grad_fx @ fx)
 
-            if np.sum(np.abs(grad_Fx.T @ Fx)) <= self.tol:
+            if np.sum(np.abs(grad_fx.T @ fx)) <= self.tol:
                 self.success = True
                 break
 
             # Calculate the final gradient vector at termination, for output
-            self.final_gradient = grad_Fx.T @ Fx
+            self.final_gradient = grad_fx.T @ fx
             self.final_x_k = x_k
 
     def print_output_report(self):
