@@ -38,7 +38,7 @@ def main():
     )
 
     # Run optimizer
-    optimizer_1.minimize(t, y_t, x0)
+    optimizer_1.minimize(x0)
 
     # Initialize optimizer without gradient argument
     optimizer_2 = LevenbergMarquardt(
