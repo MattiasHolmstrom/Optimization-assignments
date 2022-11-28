@@ -56,6 +56,8 @@ class LevenbergMarquardt:
         self.plot_conv = plot_conv
 
         # Variables for storing results in optimization
+        self.y_values = None
+        self.x_values = None
         self.function_values = []
         self.param_values = []
         self.final_gradient = None
@@ -65,6 +67,25 @@ class LevenbergMarquardt:
         self.success = False
         self.n_iterations = 0
 
+    def calculate_function(self, x_k):
+        """
+        Calculate the mean squared error (MSE) for the y values of the given data
+        points and the function value for the current parameter values.
+        """
+        Fx = self.y_values - self.func(self.x_values, x_k)
+        mse = (Fx @ Fx.T) / len(self.y_values)
+        return Fx, mse
+
+    @staticmethod
+    def calculate_grad_numeric(f):
+        """
+        Calculates the gradient numerically given a numpy array of function values.
+        """
+
+        numeric_grad = np.gradient(f)
+        return numeric_grad
+
+    # TODO: Remove once generic version has been implemented
     @staticmethod
     def calculate_function_val(t, y_t, x_k):
         """
@@ -73,9 +94,10 @@ class LevenbergMarquardt:
         """
 
         Fx = y_t - x_k[0] * np.exp(x_k[1] * t)
-        function_value = Fx @ Fx.T
-        return Fx, function_value
+        mse = (Fx @ Fx.T) / len(y_t)
+        return Fx, mse
 
+    # TODO: Remove once generic version has been implemented
     @staticmethod
     def calculate_gradient(t, x_k):
         """
@@ -85,15 +107,6 @@ class LevenbergMarquardt:
 
         grad_Fx = np.array([-np.exp(x_k[1] * t), -t * x_k[0] * np.exp(x_k[1] * t)])
         return grad_Fx
-    
-    def calculate_grad_numeric(f):
-        """
-        Calculates the gradient numerically given a numpy array of function values
-        """
-        
-        numeric_grad = np.gradient(f)
-        
-        return numeric_grad
 
     def run_lm_algorithm(self, t, y_t, x0):
         """
@@ -116,8 +129,6 @@ class LevenbergMarquardt:
 
         # Dampening factor
         damp = self.lambda_ * np.eye(2)
-        
-
 
         # Initialize flag and count variables
         self.n_iterations = 0
