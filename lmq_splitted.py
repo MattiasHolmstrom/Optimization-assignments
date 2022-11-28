@@ -72,8 +72,13 @@ class LevenbergMarquardt:
         Calculate the mean squared error (MSE) for the y values of the given data
         points and the function value for the current parameter values.
         """
-        Fx = self.y_values - self.func(self.x_values, x_k)
-        mse = (Fx @ Fx.T) / len(self.y_values)
+
+        # Call supplied function to calculate f(x) for each data point
+        Fx = self.func(x_k)
+
+        # Calculate MSE: (1 / n) * (y - y_hat)^2
+        mse = (Fx @ Fx.T) / len(Fx)
+
         return Fx, mse
 
     @staticmethod
