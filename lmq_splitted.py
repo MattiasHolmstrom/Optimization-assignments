@@ -71,6 +71,7 @@ class LevenbergMarquardt:
 
         # Call supplied function to calculate f(x) for each data point
         fx = self.func(x_k)
+        fx = fx.reshape(-1, )
 
         # Calculate MSE: (1 / n) * (y - y_hat)^2
         mse = (fx @ fx.T) / len(fx)
@@ -190,25 +191,4 @@ class LevenbergMarquardt:
 
         axes[1].set_title("Parameter values (max two shown)", fontsize=12)
 
-        plt.show()
-
-    def plot_solution(self, x_values, y_values):
-        """
-        Plot the solution given by the optimized parameters and the original
-        datapoints.
-        """
-
-        # Create plot
-        plt.figure(figsize=(6, 4))
-        plt.title("Least squares solution", fontsize=14, pad=16)
-        plt.xlabel("x", fontsize=12)
-        plt.ylabel("f(x)", fontsize=12)
-
-        # Calculate least squares solution (line)
-        line_range = np.arange(min(x_values), max(x_values) + 0.1, 0.1)
-        line_values = [self.final_x_k[0] * np.exp(self.final_x_k[1] * line_range[i]) for i in range(len(line_range))]
-
-        # Plot solution and original datapoints
-        plt.scatter(x_values, y_values, color="red")
-        plt.plot(line_range, line_values, color="blue")
         plt.show()
