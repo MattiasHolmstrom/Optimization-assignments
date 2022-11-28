@@ -37,7 +37,6 @@ class LevenbergMarquardt:
                 Gauss-Newton formula
             alpha: step size when updating x_k to x_k + 1
             max_iter: max number of iterations allowed before the algorithm terminates
-            plot_sol:
             plot_conv: set to True if MSE and parameter values per iteration should
                 be plotted
         """

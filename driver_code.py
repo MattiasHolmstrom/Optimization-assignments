@@ -1,6 +1,6 @@
 
 import numpy as np
-from lmq_splitted import LevenbergMarquardt
+from levenberg_marquardt import LevenbergMarquardt
 
 
 def main():
