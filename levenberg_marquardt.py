@@ -115,7 +115,6 @@ class LevenbergMarquardt:
 
         # Loop until optimum or other stopping criteria reached
         while self.n_iterations < self.max_iter:
-            self.n_iterations += 1
 
             # Save parameter values for this iteration
             self.param_values.append(x_k)
@@ -128,12 +127,22 @@ class LevenbergMarquardt:
             # Compute next point x_k+1
             x_k = x_k - self.alpha * (np.linalg.inv(grad_fx @ grad_fx.T + damp)) @ \
                   (grad_fx @ fx)
+                  
+            if self.n_iterations >= 1:
+               if self.function_values[self.n_iterations] >= self.function_values[self.n_iterations-1]:
+                   damp = self.lambda_* 1 * np.eye(x_k.shape[0])
+               else:
+                   damp = self.lambda_ / 5 * np.eye(x_k.shape[0])
 
             if np.sum(np.abs(grad_fx @ fx)) <= self.tol:
                 self.success = True
                 break
+                    
+            self.n_iterations += 1
 
         # Calculate final vectors and values at termination, for output
+
+        
         self.final_gradient = grad_fx @ fx
         self.final_x_k = x_k
         self.final_fx = fx
