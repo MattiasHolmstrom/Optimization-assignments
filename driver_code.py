@@ -13,7 +13,7 @@ def main():
     # Define values of t, y_t and x0
     t = np.arange(0.5, 4.5, 0.5)
     y_t = np.array([7.2, 3.0, 1.5, 0.85, 0.48, 0.25, 0.20, 0.15])
-    x0 = np.array([1, 1])
+    x0 = np.array([1.0, 1.0])
 
     # Define test function
     def test_function_1(x_k):
