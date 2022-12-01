@@ -8,8 +8,6 @@ Created on Tue Nov 22 14:59:23 2022
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import symbols, diff
-
 
 
 class LevenbergMarquardt:
@@ -22,7 +20,6 @@ class LevenbergMarquardt:
             self,
             func,
             grad=None,
-            x_vec=None,
             tol=1e-3,
             lambda_=1,
             alpha=1,
@@ -46,11 +43,7 @@ class LevenbergMarquardt:
 
         # Store input parameters as class attributes
         self.func = func
-        
-       # params = [symbols(f'{symbol}') for symbol in x_vec]
-        
         self.gradient = grad
-
         self.tol = tol
         self.lambda_ = lambda_
         self.alpha = alpha
@@ -71,52 +64,57 @@ class LevenbergMarquardt:
 
     def calculate_function(self, x_k):
         """
-        Calculate the mean squared error (MSE) for the y values of the given data
-        points and the function value for the current parameter values.
+        Calculate the mean squared error (MSE) for the given data points and the
+        function value for the current parameter values, i.e. the mean of (y - f(x))^2
+        for all datapoints.
+
+        Args:
+            x_k: the current set of parameter values
+
+        Returns:
+            fx:
+            mse:
         """
 
         # Call supplied function to calculate f(x) for each data point
         fx = self.func(x_k)
-
         fx = fx.reshape(-1, )
 
-        # Calculate MSE: (1 / n) * (y - y_hat)^2
+        # Calculate MSE
         mse = (fx @ fx.T) / len(fx)
 
         return fx, mse
 
     def calculate_gradient(self, fx, x_k):
         """
-        Calculates the gradient numerically given a numpy array of function values.
+        Calculates the gradient for the current parameter values. This is either done
+        using a gradient function supplied as an argument by the user, or numerically
+        given a numpy array of function values.
         """
 
         if self.gradient:  # Call function supplied by user if it exists
             grad_fx = self.gradient(x_k)
         else:  # Otherwise, use numerical gradient approximation
-            f, e= self.calculate_function(x_k)
-            num_grad = np.zeros((x_k.shape[0], len(f)))
-            h = 1e-3
+            f, e = self.calculate_function(x_k)
+            num_grad = np.zeros((x_k.shape[0], len(f)))  # Size of matrix
+            h = 1e-3  # Step size for gradient
             
             for i in range(x_k.shape[0]):
                 x_k1 = np.zeros(x_k.shape[0])
                 x_k1[i] = h
-                
-                x_k2 = -x_k1
-                #x_k2 = x_k
-                x_k1 = x_k1+x_k
-                x_k2 = x_k2+x_k
 
-                f, e= self.calculate_function(x_k1)
+                x_k2 = -x_k1
+                x_k1 = x_k1 + x_k
+                x_k2 = x_k2 + x_k
+
+                f, e = self.calculate_function(x_k1)
                 f2, e2 = self.calculate_function(x_k2)
                 
-                num_grad[i, :] = (f-f2)/(2*h)
-     
-            #grad = np.gradient(fx)
+                num_grad[i, :] = (f - f2) / (2 * h)
+
             grad_fx = num_grad
 
         return grad_fx
-        
-        
 
     def run_lm_algorithm(self, x0):
         """
