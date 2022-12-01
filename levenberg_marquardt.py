@@ -93,7 +93,8 @@ class LevenbergMarquardt:
         if self.gradient:  # Call function supplied by user if it exists
             grad_fx = self.gradient(x_k)
         else:  # Otherwise, use numerical gradient approximation
-            num_grad = np.zeros((x_k.shape[0], 8))
+            f, e= self.calculate_function(x_k)
+            num_grad = np.zeros((x_k.shape[0], len(f)))
             h = 1e-3
             
             for i in range(x_k.shape[0]):
@@ -103,16 +104,13 @@ class LevenbergMarquardt:
                 x_k2 = -x_k1
                 #x_k2 = x_k
                 x_k1 = x_k1+x_k
-                x_k2 = x_k+x_k2
-
-               # x_k1[i] = x_k1[i]+h
-               # x_k2[i] = x_k2[i]-h
+                x_k2 = x_k2+x_k
 
                 f, e= self.calculate_function(x_k1)
                 f2, e2 = self.calculate_function(x_k2)
                 
                 num_grad[i, :] = (f-f2)/(2*h)
-                
+     
             #grad = np.gradient(fx)
             grad_fx = num_grad
 
