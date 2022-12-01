@@ -72,8 +72,8 @@ class LevenbergMarquardt:
             x_k: the current set of parameter values
 
         Returns:
-            fx:
-            mse:
+            fx: vector of function values at each data point, for current parameters
+            mse: mean squared error for current parameters
         """
 
         # Call supplied function to calculate f(x) for each data point
@@ -85,20 +85,28 @@ class LevenbergMarquardt:
 
         return fx, mse
 
-    def calculate_gradient(self, fx, x_k):
+    def calculate_gradient(self, x_k):
         """
         Calculates the gradient for the current parameter values. This is either done
         using a gradient function supplied as an argument by the user, or numerically
         given a numpy array of function values.
+
+        Args:
+            x_k:
+
+        Returns:
+
         """
 
         if self.gradient:  # Call function supplied by user if it exists
             grad_fx = self.gradient(x_k)
+
         else:  # Otherwise, use numerical gradient approximation
-            f, e = self.calculate_function(x_k)
-            num_grad = np.zeros((x_k.shape[0], len(f)))  # Size of matrix
+            fx, _ = self.calculate_function(x_k)
+            num_grad = np.zeros((x_k.shape[0], len(fx)))  # Size of matrix
             h = 1e-3  # Step size for gradient
-            
+
+            # Approximate gradient using central differences
             for i in range(x_k.shape[0]):
                 x_k1 = np.zeros(x_k.shape[0])
                 x_k1[i] = h
@@ -107,10 +115,10 @@ class LevenbergMarquardt:
                 x_k1 = x_k1 + x_k
                 x_k2 = x_k2 + x_k
 
-                f, e = self.calculate_function(x_k1)
-                f2, e2 = self.calculate_function(x_k2)
-                
-                num_grad[i, :] = (f - f2) / (2 * h)
+                fx_1, _ = self.calculate_function(x_k1)
+                fx_2, _ = self.calculate_function(x_k2)
+
+                num_grad[i, :] = (fx_1 - fx_2) / (2 * h)
 
             grad_fx = num_grad
 
@@ -123,11 +131,6 @@ class LevenbergMarquardt:
 
         Args:
             x0: starting guess for parameter values
-
-        Returns:
-            x_k: optimal parameter values
-            function_values: value of the function for each iteration
-            parameter_values value of parameters for each iteration
         """
 
         # Initial values for parameters
@@ -148,28 +151,28 @@ class LevenbergMarquardt:
             # Compute F(x) vectors and gradient matrix of F(x)
             fx, mse = self.calculate_function(x_k)
             self.function_values.append(mse)
-            grad_fx = self.calculate_gradient(fx, x_k)
-            
+            grad_fx = self.calculate_gradient(x_k)
 
             # Compute next point x_k+1
             x_k = x_k - self.alpha * (np.linalg.inv(grad_fx @ grad_fx.T + damp)) @ \
                   (grad_fx @ fx)
-                  
-            if self.n_iterations >= 1:
-               if self.function_values[self.n_iterations] >= self.function_values[self.n_iterations-1]:
-                   damp = self.lambda_*1 * np.eye(x_k.shape[0])
-               else:
-                   damp = self.lambda_/5 * np.eye(x_k.shape[0])
 
+            # Update lambda matrix depending on increase / decrease in function value
+            if self.n_iterations >= 1:
+                if self.function_values[self.n_iterations] >= \
+                        self.function_values[self.n_iterations - 1]:
+                    damp = self.lambda_ * 1 * np.eye(x_k.shape[0])
+                else:
+                    damp = self.lambda_ / 5 * np.eye(x_k.shape[0])
+
+            # If gradient vector sufficiently close to zero, break while loop
             if np.sum(np.abs(grad_fx @ fx)) <= self.tol:
                 self.success = True
                 break
-                    
+
             self.n_iterations += 1
 
         # Calculate final vectors and values at termination, for output
-
-        
         self.final_gradient = grad_fx @ fx
         self.final_x_k = x_k
         self.final_fx = fx
@@ -211,7 +214,6 @@ class LevenbergMarquardt:
         axes[0].set_ylabel("Mean squared error (MSE)", fontsize=12)
 
         # Plot parameter values
-
         if len(self.param_values[0]) > 1:
             x_1 = [x_k[0] for x_k in self.param_values]
             x_2 = [x_k[1] for x_k in self.param_values]
