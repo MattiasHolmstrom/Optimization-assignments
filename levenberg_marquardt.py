@@ -159,7 +159,7 @@ class LevenbergMarquardt:
                   
             if self.n_iterations >= 1:
                if self.function_values[self.n_iterations] >= self.function_values[self.n_iterations-1]:
-                   damp = self.lambda_*1 * np.eye(x_k.shape[0])
+                   damp = self.lambda_*1.5 * np.eye(x_k.shape[0])
                else:
                    damp = self.lambda_/5 * np.eye(x_k.shape[0])
 
