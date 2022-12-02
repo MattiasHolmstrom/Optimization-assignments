@@ -3,7 +3,7 @@
 """
 Created on Tue Nov 22 14:59:23 2022
 
-@author: Mattias Holmström, Jakob Nyström
+@authors: Mattias Holmström, Jakob Nyström
 """
 
 import numpy as np
@@ -92,10 +92,10 @@ class LevenbergMarquardt:
         given a numpy array of function values.
 
         Args:
-            x_k:
+            x_k: the current set of parameter values
 
         Returns:
-
+            grad_fx: the gradient matrix for the current point
         """
 
         if self.gradient:  # Call function supplied by user if it exists
@@ -123,6 +123,20 @@ class LevenbergMarquardt:
             grad_fx = num_grad
 
         return grad_fx
+
+    def update_lambda(self, x_k):
+        """
+        Update value of dampening factor lambda depending on if the MSE increases
+        or decreases.
+        """
+
+        if self.function_values[self.n_iterations] >= \
+                self.function_values[self.n_iterations - 1]:
+            damp = self.lambda_ * 1.5 * np.eye(x_k.shape[0])
+        else:
+            damp = self.lambda_ / 5 * np.eye(x_k.shape[0])
+
+        return damp
 
     def run_lm_algorithm(self, x0):
         """
@@ -159,11 +173,7 @@ class LevenbergMarquardt:
 
             # Update lambda matrix depending on increase / decrease in function value
             if self.n_iterations >= 1:
-                if self.function_values[self.n_iterations] >= \
-                        self.function_values[self.n_iterations - 1]:
-                    damp = self.lambda_ * 1 * np.eye(x_k.shape[0])
-                else:
-                    damp = self.lambda_ / 5 * np.eye(x_k.shape[0])
+                damp = self.update_lambda(x_k)
 
             # If gradient vector sufficiently close to zero, break while loop
             if np.sum(np.abs(grad_fx @ fx)) <= self.tol:
@@ -193,9 +203,10 @@ class LevenbergMarquardt:
         print("------ Output report ------\n")
         print(f"Successful convergence: {self.success}")
         print(f"Parameter values: {self.final_x_k}")
-        print(f"Function value: {self.function_values[-1]}")
+        print(f"Function value (MSE): {self.function_values[-1]}")
         print(f"Number of iterations: {self.n_iterations}")
         print(f"Final gradient vector: {self.final_gradient}")
+        print(f"Residual vector: {self.final_fx}")
 
     def plot_convergence(self):
         """
