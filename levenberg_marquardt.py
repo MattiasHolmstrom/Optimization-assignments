@@ -62,6 +62,11 @@ class LevenbergMarquardt:
         self.success = False
         self.n_iterations = 0
 
+        # Other parameters
+        self.h = 1e-3
+        self.lambda_increase = 1.5
+        self.lamda_decrease = 0.2
+
     def calculate_function(self, x_k):
         """
         Calculate the mean squared error (MSE) for the given data points and the
@@ -104,12 +109,11 @@ class LevenbergMarquardt:
         else:  # Otherwise, use numerical gradient approximation
             fx, _ = self.calculate_function(x_k)
             num_grad = np.zeros((x_k.shape[0], len(fx)))  # Size of matrix
-            h = 1e-3  # Step size for gradient
 
             # Approximate gradient using central differences
             for i in range(x_k.shape[0]):
                 x_k1 = np.zeros(x_k.shape[0])
-                x_k1[i] = h
+                x_k1[i] = self.h
 
                 x_k2 = -x_k1
                 x_k1 = x_k1 + x_k
@@ -118,7 +122,7 @@ class LevenbergMarquardt:
                 fx_1, _ = self.calculate_function(x_k1)
                 fx_2, _ = self.calculate_function(x_k2)
 
-                num_grad[i, :] = (fx_1 - fx_2) / (2 * h)
+                num_grad[i, :] = (fx_1 - fx_2) / (2 * self.h)
 
             grad_fx = num_grad
 
@@ -132,9 +136,9 @@ class LevenbergMarquardt:
 
         if self.function_values[self.n_iterations] >= \
                 self.function_values[self.n_iterations - 1]:
-            damp = self.lambda_ * 1.5 * np.eye(x_k.shape[0])
+            damp = self.lambda_ * self.lambda_increase * np.eye(x_k.shape[0])
         else:
-            damp = self.lambda_ / 5 * np.eye(x_k.shape[0])
+            damp = self.lambda_ * self.lamda_decrease * np.eye(x_k.shape[0])
 
         return damp
 
